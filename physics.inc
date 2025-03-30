@@ -1,5 +1,5 @@
 include draw.inc
-include Irvine32.inc
 
+Jump proto, xPos:byte, yPos:byte, row:word
 
-Gravity, proto row: word, yPos:byte
+Gravity proto, row: word, xPos:byte, yPos:byte

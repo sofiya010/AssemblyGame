@@ -1,5 +1,4 @@
-include Irvine32.inc
 
-createEnv proto, row:word, col:word
-getScreenSize proto, row:word, col:word
+createEnv proto
+getScreenSize proto
 setFloor proto, row:word, col:word

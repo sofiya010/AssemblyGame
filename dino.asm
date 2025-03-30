@@ -1,19 +1,19 @@
 ;; Include main inc file
+include Irvine32.inc
 include physics.inc
 include init.inc
 include draw.inc
-include Irvine32.inc
 
 
 .data
 
 ;; size of the command window
-row word ?
-col word ?
+row word 0
+col word 0
 
 ;; position of bottom of player
-xPos BYTE ?
-yPos BYTE ?
+xPos BYTE 0
+yPos BYTE 0
 
 ;; score variabes
 strScore BYTE "Your score is: ",0
@@ -34,111 +34,71 @@ yBlockPos BYTE ?
 inputChar BYTE ?
 
 .code
+;; funny marcos
+
+mResetColor macro
+	
+	mov eax,white (black * 16)
+	call SetTextColor
+
+endm
+
+
 ; start main
 main PROC
 
-call createEnv
+	;; initializes the game and creates the environment
+	;; will add starts to createEnv later
+	mResetColor
+	invoke createEnv
+	;; store row and col values
+	mov row, ax
+	mov col, bx
 
+	;; set up our dino location
+	mov bl,  byte ptr row
+	mov yPos, bl
+	sub yPos, 2
+	mov xPos, 10
 
-;call setFloor ; create Floor
-;call drawCactus
+	;; draw 'dino'
+	mResetColor
+	invoke DrawPlayer, byte ptr xPos, byte ptr yPos
 
+	;; start game loop
+	gameLoop:
 
-;call DrawPlayer
+		mResetColor
 
-;call CreateRandomCoin
-;call DrawCoin
+		;; while we are on the ground
+		onGround:
 
-;call Randomize
+			; get user key input:
+ 			call ReadChar
+			mov inputChar,al
 
-gameLoop:
+			; exit game if user types 'x':
+			cmp inputChar,"x"
+			je exitGame
+		
+			;; check if jump
+			cmp inputChar,"w"
+			je ascend
 
-; getting points:
-; mov bl,xPos
-;cmp bl,xCoinPos
-;jne notCollecting
-;mov bl,yPos
-;cmp bl,yCoinPos
-;jne notCollecting
+			cmp inputChar," "
+			je ascend
 
-; player is intersecting coin: we dont need this in geodash, but useful to see how "touch" works
-;inc score
-;call CreateRandomCoin
-;call DrawCoin
-;notCollecting:
+		jmp gameLoop
 
-mov eax,white (black * 16)
-call SetTextColor
+		ascend:
+			invoke Jump, xPos, yPos, row
+			jmp gameLoop
 
-; draw score:
-mov dl,0
-mov dh,0
-call Gotoxy
-mov edx,OFFSET strScore
-call WriteString
-mov al,score
-call WriteInt
-
- call Gravity row
-
-onGround:
-
-; get user key input:
-call ReadChar
-mov inputChar,al
-
-; exit game if user types 'x':
-cmp inputChar,"x"
-je exitGame
-
-cmp inputChar,"w"
-je moveUp
-
-
-moveUp:
-; allow player to jump:
-mov ecx,2 
-jumpLoop:
-call UpdatePlayer xPos, yPos, -1
-;;dec yPos
-;;call DrawPlayer
-mov eax,70
-call Delay
-loop jumpLoop
-jmp gameLoop
-
-moveDown:
-call UpdatePlayer
-inc yPos
-call DrawPlayer
-jmp gameLoop
-
-jmp gameLoop
-
-exitGame:
-exit
+	exitGame:
+		exit
 main ENDP
 
-drawStars PROC
-; Generate random white stars in the sky above the floor
-mov ecx, 50 ; Number of stars to display
-starLoop:
-call RandomRange
-mov dl, al ; Random X position (across the whole screen)
 
-call RandomRange
-and al, 10 ; Keep stars in the top 10 rows (not in the floor area)
-mov dh, al
-
-mov eax, white + (black * 16) ; White foreground, black background
-call setTextColor
-call Gotoxy
-mov al, 42 ; ASCII for '*'
-call WriteChar
-
-loop starLoop
-ret
-drawStars ENDP
 
 
 END main
