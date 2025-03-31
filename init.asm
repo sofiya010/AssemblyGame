@@ -54,6 +54,8 @@ setFloor proc row:word, col:word
 setFloor endp
 
 
+
+
 createEnv proc
 
 	invoke getScreenSize

@@ -17,11 +17,13 @@ yPos BYTE 0
 
 ;; score variabes
 strScore BYTE "Your score is: ",0
-score BYTE 0
+score DWORD 0
+lastTime DWORD 0       ; Stores the last recorded time
 
 ;; position of a cactus
-xPosCacti BYTE 40
-yPosCacti word 0
+xPosCacti byte 40
+yPosCacti byte 0
+dir BYTE 0
 
 ; Cactus X positions array
 cactiXPos BYTE 10, 30, 50, 70, 90  ; Add more positions as needed
@@ -43,6 +45,26 @@ mResetColor macro
 
 endm
 
+checkTime PROC
+    ; Get the current time in milliseconds
+    call GetMseconds
+    mov ebx, eax       ; Store current time in EBX
+
+    ; Check if 3 seconds (3000 ms) have passed
+    mov ecx, lastTime  
+    add ecx, 3000       ; lastTime + 3000 (3 seconds)
+    cmp ebx, ecx        ; Compare current time with lastTime + 3s
+    jl noUpdate         ; If less than, skip update
+
+    ; Update score
+    add score, 5        ; Add 5 points
+
+    ; Save new lastTime
+    mov lastTime, ebx   ; Store new time
+
+noUpdate:
+    ret
+checkTime ENDP
 
 ; start main
 main PROC
@@ -58,6 +80,8 @@ main PROC
 	;; set up our dino location
 	mov bl,  byte ptr row
 	mov yPos, bl
+	mov yPosCacti, bl
+	sub yPosCacti, 2
 	sub yPos, 2
 	mov xPos, 10
 
@@ -65,16 +89,28 @@ main PROC
 	mResetColor
 	invoke DrawPlayer, byte ptr xPos, byte ptr yPos
 
+	;; draw cactus
+	
+	;mResetColor
+	invoke DrawCactus, xPosCacti, yPosCacti
+
+
+
 	;; start game loop
 	gameLoop:
-
-		mResetColor
+		mov eax, 100
+		call Delay
+		;mResetColor
+		invoke UpdateCactus, xPosCacti, yPosCacti
+		mov xPosCacti, al
+		cmp xPosCacti, 0
+		jle resetCacti
 
 		;; while we are on the ground
 		onGround:
 
 			; get user key input:
- 			call ReadChar
+ 			call ReadKey
 			mov inputChar,al
 
 			; exit game if user types 'x':
@@ -88,13 +124,22 @@ main PROC
 			cmp inputChar," "
 			je ascend
 
-		jmp gameLoop
+			jmp gameLoop
 
 		ascend:
+			mResetColor
 			invoke Jump, xPos, yPos, row
 			jmp gameLoop
 
+		resetCacti:
+			mov bl, byte ptr col
+			mov xPosCacti, bl
+			jmp gameLoop
+
+
 	exitGame:
+		mResetColor
+		;mov eax, 5
 		exit
 main ENDP
 

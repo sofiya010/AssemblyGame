@@ -28,17 +28,28 @@ Gravity proc row: word, xPos:byte, yPos: byte
 
 Gravity endp
 
+
+;; Jump procedure 
 Jump proc xPos: byte, yPos: byte, row: word
+	;; changes position of player up by one
 	invoke UpdatePlayer, xPos, yPos, 1
-	mov yPos, al
+	mov yPos, al ;; update y position
+
+	;; delay runtime
 	mov eax, 80
 	call Delay
+	
+	;; changes position of player up by one 
 	invoke UpdatePlayer, xPos, yPos, 1
 	mov yPos, al
+
+	;; delay runtime
 	mov eax, 160
 	call Delay
+	
+	;; invoke Gravity
 	invoke Gravity, row, xPos, yPos
-	ret
+	ret  ;; return
 Jump endp
 
 end
