@@ -3,52 +3,56 @@ include physics.inc
 include draw.inc
 
 .code
+
+mResetColor macro
+	
+	mov eax,white (black * 16)
+	call SetTextColor
+
+endm
+
+
 Gravity proc row: word, xPos:byte, yPos: byte
 	
-	falling:
-		;; if we are on ground then exit recursion
-		mov dl, byte ptr row
-		sub dl, 2
-		cmp yPos, dl
-		je onGround
+	;; if we are on ground then exit recursion
+	mov dl, byte ptr row
+	sub dl, 2
 	
-		call Delay ;lets slow that animation down a bit
-	
-		; make player fall:
-		invoke UpdatePlayer, xPos, yPos, -1
-		inc yPos
+	; make player fall:
+	invoke UpdatePlayer, xPos, yPos, -1
+	inc yPos
 
-		mov eax,80
-		call Delay
-		jmp falling
-		
-
-	onGround:
-		ret
+	mov al, yPos
+	ret
 
 Gravity endp
 
 
 ;; Jump procedure 
-Jump proc xPos: byte, yPos: byte, row: word
+Jump proc xPos: byte, yPos: byte, row: word, cactiMem:dword, yPosCacti:byte, numCacti:byte
 	;; changes position of player up by one
 	invoke UpdatePlayer, xPos, yPos, 1
 	mov yPos, al ;; update y position
 
 	;; delay runtime
-	mov eax, 80
+	mov eax, 20
 	call Delay
+
+	;inc xPosCacti
+	invoke UpdateCactus, cactiMem, yPosCacti, numCacti
 	
+	mResetColor
 	;; changes position of player up by one 
 	invoke UpdatePlayer, xPos, yPos, 1
 	mov yPos, al
 
 	;; delay runtime
-	mov eax, 160
+	mov eax, 20
 	call Delay
 	
 	;; invoke Gravity
-	invoke Gravity, row, xPos, yPos
+	mov al, yPos
+	
 	ret  ;; return
 Jump endp
 

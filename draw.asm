@@ -81,23 +81,41 @@ DrawCactus ENDP
 
 
 ;; basically moves the cactus visually to the left- then we can code interactions
-UpdateCactus PROC xPosCacti:byte, yPosCacti:byte
+UpdateCactus PROC cactiMem:dword, yPosCacti:byte, numCacti:byte
 
-   ;;mov al, xPosCacti  ; Zero-extend BYTE to WORD
-   mCursor xPosCacti, yPosCacti   ; Now both parameters are WORD- still not working though
+    ;; check if there are any cacti to update
+    mov cl, numCacti
+    cmp cl, 0
+    je done
+    mov esi, cactiMem
+    
+    ;; if there are
+    update:
+       ;; move cursor to x,y
+       mov bl, byte ptr [esi]
+       mCursor bl, yPosCacti   
 
-   mov al," "
-   call WriteChar
+       ;; erase
+       mov al," "
+       call WriteChar
 
-   dec xPosCacti ;prolly need to dec xPosCacti via dec ax, but rn just trying to get it to compile
-   cmp xPosCacti, 0
-   jle done
+       ;; decrease xPos by 1
+       dec bl
    
-   mCursor xPosCacti, yPosCacti
-   invoke DrawCactus, xPosCacti, yPosCacti
+       ;; move to new place and draw
+       mCursor bl, yPosCacti
+       invoke DrawCactus, bl, yPosCacti
+        
+       ;; check if end of array
+       dec cl
+       cmp cl, 0
+       jle done
+       inc esi
+       jmp update
    
+
    done:
-       mov al, xPosCacti
+       ;mov al, xPosCacti
        ret
 
 UpdateCactus ENDP
