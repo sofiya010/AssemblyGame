@@ -80,9 +80,12 @@ createCacti PROC
 
 	;; if it did...
 	
-
+	;; get column
 	mov bl, byte ptr col
+	;; move into esi, the offset of cacti
 	mov esi, offset cacti
+	;; not sure why, but this is the only way to add to esi
+	;; without crashing
 	mov ecx, 0
 	mov cl, numCacti
 	add esi, ecx
@@ -117,7 +120,6 @@ decCacti proc
 	;; we decrease numCacti first because we need to shift numCacti-1 cacti
 	shift:
 		;; move the value from the right to this one
-		
 		mov bl, [esi + 1]
 		mov [esi], bl
 		inc esi
@@ -137,7 +139,7 @@ decCacti proc
 			mov [esi], bl
 			inc esi
 			cmp cl, 0
-			je fin
+			je fin ;; finish if end of array
 			dec cl
 			jmp dloop			
 		
@@ -217,32 +219,29 @@ main PROC
 
 	invoke DrawPlayer, byte ptr xPos, byte ptr yPos
 	
-	;; draw cactus
-	;;invoke DrawCactus, xPosCacti, yPosCacti
-
-
 
 	;; start game loop
 	gameLoop:
-		inc score
+		
+		inc score ;; free score at beginning lol
+
+		;; write score in top left
 		mResetColor
-		mCursor 15,0
+		mCursor 15,0 ;; i know i can do by len of strScore but dont feel like it
 		mov eax, score
 		call WriteInt
 		
+		;; delay the game to make it playable
 		mov eax, 100
 		call Delay
 
+		;; try to create a cacti
 		call createCacti
 
+		;; update all the cacti we have
 		invoke UpdateCactus, offset cacti, yPosCacti, numCacti
-		call decCacti
-		
-		
-		;mov xPosCacti, al
-		;cmp xPosCacti, 0
-		;jle resetCacti
-
+		call decCacti ;; decrease location of cacti by one, already displayed above
+		;; I think this has something to do with the cacti at the end 
 		mov dl, yPos
 		cmp yFloor, dl
 		jne fall
@@ -275,10 +274,10 @@ main PROC
 			; exit game if user types 'x':
 			cmp inputChar,"x"
 			je exitGame
-		
-
+			;; if none then continue
 			jmp gameLoop
 
+		;; we do be jumping
 		ascend:
 			mResetColor
 			invoke Jump, xPos, yPos, row, offset cacti, yPosCacti, numCacti
@@ -286,42 +285,48 @@ main PROC
 			
 			jmp gameLoop
 
+		;; we do be falling
 		fall: 
-			invoke UpdateCactus, offset cacti, yPosCacti, numCacti
 			
 			mResetColor
 			
+			;; I SHALL INVOKE GRAVITY
 			invoke Gravity, row, xPos, yPos
 			mov yPos, al
 			
+			;; move cactus again, score stays the same, maybe inc here idk
+			invoke UpdateCactus, offset cacti, yPosCacti, numCacti
+
+			;; check if we are on the floor
 			cmp al, yFloor
 			jne gameLoop
 
+			;; if we are, do collision detection
 			call checkHit
 			cmp dl, 1
 			je isHit
 
 			jmp gameLoop
 
+		;; does nothing
 		duck:
 			jmp gameLoop
 
-		resetCacti:
-			mov bl, byte ptr col
-			mov xPosCacti, bl
-			jmp gameLoop
-
+		;; endgame logic
 		isHit:
+			;; clear screen
 			call Clrscr
 			mResetColor
+			;; div size of terminal to get semi centered
 			mov ax, col
 			mov bl, 2
 			div bl
-			sub ax, 8
+			sub ax, 10
 			mov dx, ax
 			mov ax, row
 			div bl
 			mCursor dl, al
+			;; write out score
 			mov edx, offset strEnd
 			call WriteString
 			mov eax, score
@@ -329,11 +334,10 @@ main PROC
 			jmp exitGame
 
 
-
+	;; wait 3 seconds and end
 	exitGame:
-		mov eax, 5000
+		mov eax, 3000
 		call Delay
-		;mov eax, 5
 		exit
 main ENDP
 

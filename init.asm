@@ -57,9 +57,10 @@ setFloor endp
 
 
 createEnv proc
-
+	;; get screan size and set the floor
 	invoke getScreenSize
 	invoke setFloor, row_hold, col_hold
+	;; stash row and col 
 	mov ax, row_hold
 	mov bx, col_hold
 	ret

@@ -115,35 +115,8 @@ UpdateCactus PROC cactiMem:dword, yPosCacti:byte, numCacti:byte
    
 
    done:
-       ;mov al, xPosCacti
        ret
 
 UpdateCactus ENDP
-
-
-
-;; will implement for contest 2
-
-;;DrawStars PROC
-; Generate random white stars in the sky above the floor
-;;mov ecx, 50 ; Number of stars to display
-;;starLoop:
-;;call RandomRange
-;;mov dl, al ; Random X position (across the whole screen)
-
-;;call RandomRange
-;;and al, 10 ; Keep stars in the top 10 rows (not in the floor area)
-;;mov dh, al
-
-;;mov eax, white + (black * 16) ; White foreground, black background
-;;call setTextColor
-;;call Gotoxy
-;;mov al, 42 ; ASCII for '*'
-;;call WriteChar
-
-;;loop starLoop
-;;ret
-;;DrawStars ENDP
-
 
 end
