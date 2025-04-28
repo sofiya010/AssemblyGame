@@ -33,7 +33,7 @@ yPosCacti byte 0
 cacti byte 10 dup(0)
 numCacti BYTE 0   ; The number of shown cacti
 
-spines byte 10 dup(0)
+spines byte 5 dup(0)
 numSpine BYTE 0   ; The number of shown cacti
 
 inputChar BYTE ?
@@ -71,7 +71,7 @@ createCacti PROC
 	;; spawn occurred
 	mRand
 	cmp eax, 0
-	jne fin
+	jne daSpine
 
 	;; if it did...
 	
@@ -90,6 +90,11 @@ createCacti PROC
 
 	fin:
 		ret
+	
+	daSpine:
+		invoke createSpine
+		ret
+
 createCacti ENDP
 
 
@@ -123,6 +128,8 @@ createSpine PROC
 
 	fin:
 		ret
+		
+
 createSpine ENDP
 
 

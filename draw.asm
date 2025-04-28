@@ -168,62 +168,67 @@ DrawStars PROC
     mov ecx, 0
     
     ff:
+        ;; get x val
         mov esi, offset Xstars
         add esi, ecx
         mov edx, [esi]
         mov curX, dl
+        ;; get y val
         mov esi, offset Ystars
         add esi, ecx
         mov edx, [esi]
         mov curY, dl
         
+        ;; move there and write
         mCursor curX, curY
         mov al, "*"
         call WriteChar
 
+        ;; for all stars in list
         inc cl
         cmp cl, 14
-        je toEnd
-        jmp ff
+        jne ff
 
-    toEnd:
         ret
 
 DrawStars ENDP
 
 
+
+;; macro for animation
 mNext macro xPos, yPos
     mov eax, 250
     call Delay
+
+    ;; erase cur spine
     mResetColor
     mCursor xPos, yPos
     mov al," "
     call WriteChar
-    
+    ;; move to next spine pos
     dec yPos
     dec xPos
     mCursor xPos, yPos
     
-    
-
-endm 
-
+endm
 
 TakeSpine proc, xPos:byte, yPos:byte
 
     mov eax, red + (black * 16)  ; Set text color to red with black background
     call SetTextColor
     mCursor xPos, yPos
-    mov al, "@"
+    mov al, "@" ;; bloody cactus
     call WriteChar
 
     dec xPos
     dec yPos
-    fly:
+
+    fly: ;; i know its bad code, but it works
         mov cl, xPos
         cmp cl, 0
         jle daEnd
 
+        ;; draw new spine flying away and rotating
         mNext xPos, yPos
         mov al, '/'
         call WriteChar
@@ -231,7 +236,6 @@ TakeSpine proc, xPos:byte, yPos:byte
         mov cl, xPos
         cmp cl, 0
         jle daEnd
-
 
         mNext xPos, yPos
         mov al, '_'
@@ -264,18 +268,21 @@ TakeSpine endp
 
 
 Grave proc row:word, col:word
-    
+    ;; redraw floor
     invoke setFloor, row, col
 
     mov eax, black + (gray* 16)  ; Set text color to green with black background
     call SetTextColor
- 
+    ;; in the middle of screen
     mov ax, col
     mov bl, 2
     div bl
     
+    ;; height of stone
     mov byte ptr col, al
     mov cl, 5
+    
+    ;; print gray
     gg: 
         dec row
         mCursor col, row
@@ -286,6 +293,7 @@ Grave proc row:word, col:word
         je cross
         jmp gg
 
+    ;; print the cross part
     cross:
         dec col
         inc row
@@ -302,11 +310,6 @@ Grave proc row:word, col:word
         call WriteChar
 
         ret
-
-
-
 Grave endp
-
-
 
 end
