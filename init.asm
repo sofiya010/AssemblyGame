@@ -38,8 +38,6 @@ setFloor proc row:word, col:word
 	sand:
 		mov eax, yellow * 16 ;change to yellow bc sand
 		call setTextColor
-		;mov dh, byte ptr row
-		;call Gotoxy
 		jmp last
 	
 	last:

@@ -1,5 +1,5 @@
 include Irvine32.inc
-
+include init.inc
 include draw.inc
 .data
 moonLine1 BYTE '  ,-,',0
@@ -7,12 +7,25 @@ moonLine2 BYTE ' /.(',0
 moonLine3 BYTE ' \ {',0
 moonLine4 BYTE '  `-`',0
 
+
+Xstars byte 10, 20, 30, 43, 50, 80, 40, 35, 70, 65, 90, 115, 115, 100 
+Ystars byte 5, 8, 6, 9, 4, 5, 7, 9, 8, 4, 8, 2, 7, 6
+curX byte 0
+curY byte 0
+
 .code
 ;; macro to one line the movement of cursor on terminal
 mCursor macro xPos, yPos
-    mov dl,xPos
-    mov dh,yPos
+    mov dl,byte ptr xPos
+    mov dh,byte ptr yPos
     call Gotoxy
+endm
+
+mResetColor macro
+	
+	mov eax,white (black * 16)
+	call SetTextColor
+
 endm
 
 ;; Updates the location of player on the screen
@@ -152,65 +165,148 @@ DrawStars PROC
     mov edx, offset moonLine4
     call WriteString
 
-    ; Draw a few * stars manually at chosen positions
-    ; mCursor x, y
-    mCursor 10, 5
-    mov al, "*"
-    call WriteChar
+    mov ecx, 0
+    
+    ff:
+        mov esi, offset Xstars
+        add esi, ecx
+        mov edx, [esi]
+        mov curX, dl
+        mov esi, offset Ystars
+        add esi, ecx
+        mov edx, [esi]
+        mov curY, dl
+        
+        mCursor curX, curY
+        mov al, "*"
+        call WriteChar
 
-    mCursor 20, 8
-    mov al, "*"
-    call WriteChar
+        inc cl
+        cmp cl, 14
+        je toEnd
+        jmp ff
 
-    mCursor 30, 6
-    mov al, "*"
-    call WriteChar
+    toEnd:
+        ret
 
-    mCursor 43, 9
-    mov al, "*"
-    call WriteChar
-
-    mCursor 50, 4
-    mov al, "*"
-    call WriteChar
-
-    mCursor 80, 5
-    mov al, "*"
-    call WriteChar
-
-    mCursor 40, 7
-    mov al, "*"
-    call WriteChar
-
-    mCursor 35, 9
-    mov al, "*"
-    call WriteChar
-
-    mCursor 70, 8
-    mov al, "*"
-    call WriteChar
-
-    mCursor 65, 4
-    mov al, "*"
-    call WriteChar
-
-    mCursor 90, 8
-    mov al, "*"
-    call WriteChar
-
-    mCursor 115, 2
-    mov al, "*"
-    call WriteChar
-
-    mCursor 115, 7
-    mov al, "*"
-    call WriteChar
-
-    mCursor 100, 6
-    mov al, "*"
-    call WriteChar
-
-    ret
 DrawStars ENDP
+
+
+mNext macro xPos, yPos
+    mov eax, 250
+    call Delay
+    mResetColor
+    mCursor xPos, yPos
+    mov al," "
+    call WriteChar
+    
+    dec yPos
+    dec xPos
+    mCursor xPos, yPos
+    
+    
+
+endm 
+
+
+TakeSpine proc, xPos:byte, yPos:byte
+
+    mov eax, red + (black * 16)  ; Set text color to red with black background
+    call SetTextColor
+    mCursor xPos, yPos
+    mov al, "@"
+    call WriteChar
+
+    dec xPos
+    dec yPos
+    fly:
+        mov cl, xPos
+        cmp cl, 0
+        jle daEnd
+
+        mNext xPos, yPos
+        mov al, '/'
+        call WriteChar
+
+        mov cl, xPos
+        cmp cl, 0
+        jle daEnd
+
+
+        mNext xPos, yPos
+        mov al, '_'
+        call WriteChar
+
+        mov cl, xPos
+        cmp cl, 0
+        jle daEnd
+
+
+        mNext xPos, yPos
+        mov al, '\'
+        call WriteChar
+
+        mov cl, xPos
+        cmp cl, 0
+        jle daEnd
+
+
+        mNext xPos, yPos
+        mov al, '|'
+        call WriteChar
+        jmp fly
+
+    daEnd:
+        ret
+
+
+TakeSpine endp
+
+
+Grave proc row:word, col:word
+    
+    invoke setFloor, row, col
+
+    mov eax, black + (gray* 16)  ; Set text color to green with black background
+    call SetTextColor
+ 
+    mov ax, col
+    mov bl, 2
+    div bl
+    
+    mov byte ptr col, al
+    mov cl, 5
+    gg: 
+        dec row
+        mCursor col, row
+        mov al, ' '
+        call WriteChar
+        dec cl
+        cmp cl, 0
+        je cross
+        jmp gg
+
+    cross:
+        dec col
+        inc row
+
+        mCursor col, row
+        mov al, ' '
+        call WriteChar
+
+        inc col
+        inc col
+
+        mCursor col, row
+        mov al, ' '
+        call WriteChar
+
+        ret
+
+
+
+Grave endp
+
+
 
 end

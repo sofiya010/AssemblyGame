@@ -20,27 +20,21 @@ yFloor byte 0
 ;; score variabes
 strScore BYTE "Your score is: ",0
 score DWORD 0
-lastTime DWORD 0       ; Stores the last recorded time
 
 
 strTaunt byte "Oh, your spine's gone. And you have no insurance? Game Over.", 0
 strEnd byte "Maidens? None. Score? ",0
 ;; position of a cactus
-xPosCacti byte 40
 yPosCacti byte 0
-dir BYTE 0
+
 
 ; Cactus X positions array
 
 cacti byte 10 dup(0)
 numCacti BYTE 0   ; The number of shown cacti
 
-cactiXPos BYTE 10, 30, 50, 70, 90  ; Add more positions as needed
-
-
-; block obstacles to jump over
-xBlockPos BYTE ?
-yBlockPos BYTE ?
+spines byte 10 dup(0)
+numSpine BYTE 0   ; The number of shown cacti
 
 inputChar BYTE ?
 
@@ -97,6 +91,41 @@ createCacti PROC
 	fin:
 		ret
 createCacti ENDP
+
+
+createSpine PROC
+	;; check if we have already hit
+	;; maximum cacti
+	mov dl, numSpine
+	cmp dl, 10
+	jge fin
+	
+	;; check if the 1/18 chance of a
+	;; spawn occurred
+	mRand
+	cmp eax, 0
+	jne fin
+
+	;; if it did...
+	
+	;; get column
+	mov bl, byte ptr col
+	;; move into esi, the offset of cacti
+	mov esi, offset spines
+	;; not sure why, but this is the only way to add to esi
+	;; without crashing
+	mov ecx, 0
+	mov cl, numSpine
+	add esi, ecx
+	
+	mov [esi], bl
+	inc numSpine
+
+	fin:
+		ret
+createSpine ENDP
+
+
 
 
 decCacti proc
@@ -243,7 +272,7 @@ main PROC
 		call WriteInt
 		
 		;; delay the game to make it playable
-		mov eax, 100
+		mov eax, 110
 		call Delay
 
 		;; try to create a cacti
@@ -261,7 +290,6 @@ main PROC
 		onGround:
 			
 			call checkHit
-
 			cmp dl, 1
 			je isHit
 
@@ -308,16 +336,25 @@ main PROC
 			;; move cactus again, score stays the same, maybe inc here idk
 			invoke UpdateCactus, offset cacti, yPosCacti, numCacti
 
+			mov al, yPos
 			;; check if we are on the floor
 			cmp al, yFloor
-			jne gameLoop
+			je ender
+
+			dec al
+
+			cmp al, yFloor
+			je ender
+			jmp gameLoop
+
 
 			;; if we are, do collision detection
-			call checkHit
-			cmp dl, 1
-			je isHit
+			ender: 
+				call checkHit
+				cmp dl, 1
+				je isHit
 
-			jmp gameLoop
+				jmp gameLoop
 
 		;; does nothing
 		duck:
@@ -326,38 +363,42 @@ main PROC
 		;; endgame logic
 		isHit:
 			;; clear screen
+
+			invoke TakeSpine, xPos, yPos
+
 			call Clrscr
+			invoke Grave, word ptr yFloor, col
 			mResetColor
-	;; div size of terminal to get semi centered
-	mov ax, col 
-	mov bl, 2
-	div bl
-	sub ax, 10
-	mov dx, ax
-	mov ax, row 
-	div bl
-	sub dl, 40 ; just moving it a bit left, long sentence for t
-	mCursor dl, al
+			;; div size of terminal to get semi centered
+			mov ax, col 
+			mov bl, 2
+			div bl
+			sub ax, 10
+			mov dx, ax
+			mov ax, row 
+			div bl
+			sub dl, 20 ; just moving it a bit left, long sentence for t
+			mCursor dl, al
 
-	;; write out taunt
+			;; write out taunt
 
-	mov edx, offset strTaunt
-	call WriteString
+			mov edx, offset strTaunt
+			call WriteString
 
-	;; move cursor down one line
-	inc al       ;; AL holds the row (after mCursor)
-	;add dl, 20
-	mCursor dl, al
+			;; move cursor down one line
+			inc al       ;; AL holds the row (after mCursor)
+			add dl, 18
+			mCursor dl, al
 
-	;; write out ending string
-	mov edx, offset strEnd
-	call WriteString
+			;; write out ending string
+			mov edx, offset strEnd
+			call WriteString
 
-	;; write out score
-	mov eax, score
-	call WriteInt
+			;; write out score
+			mov eax, score
+			call WriteInt
 
-	jmp exitGame
+			jmp exitGame
 
 
 
