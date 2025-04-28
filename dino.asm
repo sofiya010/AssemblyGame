@@ -23,7 +23,8 @@ score DWORD 0
 lastTime DWORD 0       ; Stores the last recorded time
 
 
-strEnd byte "Your final score was: ",0
+strTaunt byte "Oh, your spine's gone. And you have no insurance? Game Over.", 0
+strEnd byte "Maidens? None. Score? ",0
 ;; position of a cactus
 xPosCacti byte 40
 yPosCacti byte 0
@@ -218,6 +219,16 @@ main PROC
 	call WriteInt
 
 	invoke DrawPlayer, byte ptr xPos, byte ptr yPos
+
+	;draw some stars
+	invoke DrawStars
+
+	; Set text color to bright white on black
+    mov eax, white + (black * 16)
+    call SetTextColor
+
+	; draw some stars 
+
 	
 
 	;; start game loop
@@ -317,26 +328,42 @@ main PROC
 			;; clear screen
 			call Clrscr
 			mResetColor
-			;; div size of terminal to get semi centered
-			mov ax, col
-			mov bl, 2
-			div bl
-			sub ax, 10
-			mov dx, ax
-			mov ax, row
-			div bl
-			mCursor dl, al
-			;; write out score
-			mov edx, offset strEnd
-			call WriteString
-			mov eax, score
-			call WriteInt
-			jmp exitGame
+	;; div size of terminal to get semi centered
+	mov ax, col 
+	mov bl, 2
+	div bl
+	sub ax, 10
+	mov dx, ax
+	mov ax, row 
+	div bl
+	sub dl, 40 ; just moving it a bit left, long sentence for t
+	mCursor dl, al
+
+	;; write out taunt
+
+	mov edx, offset strTaunt
+	call WriteString
+
+	;; move cursor down one line
+	inc al       ;; AL holds the row (after mCursor)
+	;add dl, 20
+	mCursor dl, al
+
+	;; write out ending string
+	mov edx, offset strEnd
+	call WriteString
+
+	;; write out score
+	mov eax, score
+	call WriteInt
+
+	jmp exitGame
 
 
-	;; wait 3 seconds and end
+
+	;; wait 5 seconds and end
 	exitGame:
-		mov eax, 3000
+		mov eax, 5000
 		call Delay
 		exit
 main ENDP
