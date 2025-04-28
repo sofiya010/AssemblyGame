@@ -1,6 +1,12 @@
 include Irvine32.inc
 
 include draw.inc
+.data
+moonLine1 BYTE '  ,-,',0
+moonLine2 BYTE ' /.(',0
+moonLine3 BYTE ' \ {',0
+moonLine4 BYTE '  `-`',0
+
 .code
 ;; macro to one line the movement of cursor on terminal
 mCursor macro xPos, yPos
@@ -118,5 +124,93 @@ UpdateCactus PROC cactiMem:dword, yPosCacti:byte, numCacti:byte
        ret
 
 UpdateCactus ENDP
+
+DrawStars PROC
+    ; Set text color to bright white on black
+    mov eax, white + (black * 16)
+    call SetTextColor
+
+    ; draw a moon
+
+    ; Line 1
+    mCursor 0, 2
+    mov edx, offset moonLine1
+    call WriteString
+
+    ; Line 2
+    mCursor 0, 3
+    mov edx, offset moonLine2
+    call WriteString
+
+    ; Line 3
+    mCursor 0, 4
+    mov edx, offset moonLine3
+    call WriteString
+
+    ; Line 4
+    mCursor 0, 5
+    mov edx, offset moonLine4
+    call WriteString
+
+    ; Draw a few * stars manually at chosen positions
+    ; mCursor x, y
+    mCursor 10, 5
+    mov al, "*"
+    call WriteChar
+
+    mCursor 20, 8
+    mov al, "*"
+    call WriteChar
+
+    mCursor 30, 6
+    mov al, "*"
+    call WriteChar
+
+    mCursor 43, 9
+    mov al, "*"
+    call WriteChar
+
+    mCursor 50, 4
+    mov al, "*"
+    call WriteChar
+
+    mCursor 80, 5
+    mov al, "*"
+    call WriteChar
+
+    mCursor 40, 7
+    mov al, "*"
+    call WriteChar
+
+    mCursor 35, 9
+    mov al, "*"
+    call WriteChar
+
+    mCursor 70, 8
+    mov al, "*"
+    call WriteChar
+
+    mCursor 65, 4
+    mov al, "*"
+    call WriteChar
+
+    mCursor 90, 8
+    mov al, "*"
+    call WriteChar
+
+    mCursor 115, 2
+    mov al, "*"
+    call WriteChar
+
+    mCursor 115, 7
+    mov al, "*"
+    call WriteChar
+
+    mCursor 100, 6
+    mov al, "*"
+    call WriteChar
+
+    ret
+DrawStars ENDP
 
 end
