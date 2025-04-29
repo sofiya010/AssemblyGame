@@ -33,9 +33,6 @@ yPosCacti byte 0
 cacti byte 10 dup(0)
 numCacti BYTE 0   ; The number of shown cacti
 
-spines byte 5 dup(0)
-numSpine BYTE 0   ; The number of shown cacti
-
 inputChar BYTE ?
 
 .code
@@ -71,7 +68,7 @@ createCacti PROC
 	;; spawn occurred
 	mRand
 	cmp eax, 0
-	jne daSpine
+	jne fin
 
 	;; if it did...
 	
@@ -91,47 +88,8 @@ createCacti PROC
 	fin:
 		ret
 	
-	daSpine:
-		invoke createSpine
-		ret
 
 createCacti ENDP
-
-
-createSpine PROC
-	;; check if we have already hit
-	;; maximum cacti
-	mov dl, numSpine
-	cmp dl, 10
-	jge fin
-	
-	;; check if the 1/18 chance of a
-	;; spawn occurred
-	mRand
-	cmp eax, 0
-	jne fin
-
-	;; if it did...
-	
-	;; get column
-	mov bl, byte ptr col
-	;; move into esi, the offset of cacti
-	mov esi, offset spines
-	;; not sure why, but this is the only way to add to esi
-	;; without crashing
-	mov ecx, 0
-	mov cl, numSpine
-	add esi, ecx
-	
-	mov [esi], bl
-	inc numSpine
-
-	fin:
-		ret
-		
-
-createSpine ENDP
-
 
 
 
